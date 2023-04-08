@@ -1,15 +1,67 @@
 # IBARP
 
-This is a plugin for the Minecraft server that allows players' inventories to be backed up and restored. When a player runs the /inventorybackup command, a backup file is created in the plugin's data folder that contains the player's inventory. The plugin also provides a command /inv_backup_load <username> <backup_name> that allows a player's inventory to be restored from a backup file.
+IBARP is a plugin for Minecraft server that provides inventory backup and restore functionality for players
 
-The plugin uses the NBT format to serialize the player's inventory to a file. It also uses GZIP compression to reduce the size of the backup files.
+## Features
 
-The onEnable method creates a folder for storing the backup files if it doesn't exist yet. It also registers the /inventorybackup and /inv_backup_load commands with the server's command system.
+- Create backups of player inventories using /inventorybackup command.
+- Restore player inventories using /inv_backup_load <backup_name> command.
+- Serialization of inventory to backup file using NBT format.
+- GZIP compression used to reduce backup file size.
+- Automatic creation of backup folder on plugin enable.
 
-The backupPlayerInventory method is called when a player runs the /inventorybackup command. It gets the player's inventory contents and serializes them to a backup file using NBT and GZIP compression. The backup file is named with the player's username and a timestamp to make it unique.
+## Example of backupPlayerInventory
 
-The onCommand method handles both the /inventorybackup and /inv_backup_load commands. The /inventorybackup command creates a backup of the player's inventory and sends a confirmation message to the player. If the command is run from the console, it creates backups for all online players.
+```java
+    private void backupPlayerInventory(Player player) {
+        String playerName = player.getName();
+        ItemStack[] items = player.getInventory().getContents();
 
-The /inv_backup_load command restores a player's inventory from a backup file. It takes two arguments: the username of the player to restore the inventory for and the name of the backup file to restore from. It loads the backup file from disk, deserializes the inventory using NBT, and sets the player's inventory to the restored items. It sends a confirmation message to the command sender if the restore was successful, or an error message if it failed.
+        LocalDateTime now = LocalDateTime.now();
+        String folderName = backupFolder + File.separator + playerName;
+        File playerFolder = new File(folderName);
 
-The onTabComplete method is used to provide tab completion for the /inv_backup_load command. It suggests player names and backup file names based on the arguments passed so far.
+        if (!playerFolder.exists()) {
+            if (!playerFolder.mkdirs()) {
+                getLogger().warning("Failed to create backup folder for player " + playerName + "!");
+                return;
+            }
+        }
+
+        String filename = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm")) + ".dat.gz";
+        File backupFile = new File(playerFolder, filename);
+
+        try (GZIPOutputStream gos = new GZIPOutputStream(new FileOutputStream(backupFile))) {
+            NBTTagCompound root = new NBTTagCompound();
+            NBTTagList itemList = new NBTTagList();
+
+            for (int i = 0; i < items.length; i++) {
+                if (items[i] != null) {
+                    NBTTagCompound itemTag = new NBTTagCompound();
+                    CraftItemStack craftItemStack = (CraftItemStack) items[i];
+                    net.minecraft.server.v1_7_R4.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(craftItemStack);
+                    nmsItemStack.save(itemTag);
+                    itemList.add(itemTag);
+                }
+            }
+
+            root.set("Inventory", itemList);
+            NBTCompressedStreamTools.a(root, (DataOutput) new DataOutputStream(gos));
+
+            // Update the latest backup file for the player
+            latestBackups.put(playerName, backupFile);
+
+        } catch (IOException e) {
+            getLogger().warning("Failed to backup inventory for player " + playerName + ": " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            getLogger().warning("An unexpected error occurred while backing up the inventory for player " + playerName + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+```
+
+This method is called when a player runs the /inventorybackup command. It creates a backup file in the plugin's data folder with the player's username and timestamp as the file name. It then gets the player's inventory contents and serializes them to the backup file using NBT and GZIP compression.
+
+
+If anyone is interested in contributing to IBARP or has some ideas to improve the plugin, I would be more than happy to discuss it.
