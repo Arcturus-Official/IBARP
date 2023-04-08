@@ -1,6 +1,6 @@
 # IBARP
 
-This is a plugin for the Minecraft server software Spigot that allows players' inventories to be backed up and restored. When a player runs the /inventorybackup command, a backup file is created in the plugin's data folder that contains the player's inventory. The plugin also provides a command /inv_backup_load <username> <backup_name> that allows a player's inventory to be restored from a backup file.
+This is a plugin for the Minecraft server that allows players' inventories to be backed up and restored. When a player runs the /inventorybackup command, a backup file is created in the plugin's data folder that contains the player's inventory. The plugin also provides a command /inv_backup_load <username> <backup_name> that allows a player's inventory to be restored from a backup file.
 
 The plugin uses the NBT format to serialize the player's inventory to a file. It also uses GZIP compression to reduce the size of the backup files.
 
