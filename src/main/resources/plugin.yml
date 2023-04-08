@@ -1,0 +1,10 @@
+name: IBARP
+version: '${version}'
+main: arcturus.network.ibarp.Ibarp
+authors: [ Avalanche7CZ ]
+description: Inventory backup plugin.
+commands:
+  inventorybackup:
+    description: Backs up the player's inventory.
+  inv_backup_load:
+    description: Load player's inventory from backup file.
