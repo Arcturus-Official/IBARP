@@ -13,26 +13,23 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.GZIPOutputStream;
-import java.io.DataOutputStream;
 
 
 
 
 
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class Ibarp extends JavaPlugin implements CommandExecutor {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
     private File backupFolder;
 
     // Store the latest inventory backup for each player
@@ -73,7 +70,7 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
             File playerFolder = new File(backupFolder.getPath() + File.separator + playerName);
             if (playerFolder.exists() && playerFolder.isDirectory()) {
                 List<String> backupNames = new ArrayList<>();
-                for (File file : playerFolder.listFiles()) {
+                for (File file : Objects.requireNonNull(playerFolder.listFiles())) {
                     if (file.isFile() && file.getName().endsWith(".dat.gz")) {
                         backupNames.add(file.getName().replace(".dat.gz", ""));
                     }
@@ -84,6 +81,7 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         switch (cmd.getName().toLowerCase()) {
             case "inventorybackup":
@@ -108,7 +106,7 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
                 String playerName = args[0];
                 String backupName = args[1];
                 File backupFile = getBackupFile(playerName, backupName);
-                if (!backupFile.exists()) {
+                if (!Objects.requireNonNull(backupFile).exists()) {
                     sender.sendMessage(ChatColor.RED + "Backup file not found!");
                     return true;
                 }
@@ -168,10 +166,10 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
             NBTTagCompound root = new NBTTagCompound();
             NBTTagList itemList = new NBTTagList();
 
-            for (int i = 0; i < items.length; i++) {
-                if (items[i] != null) {
+            for (ItemStack item : items) {
+                if (item != null) {
                     NBTTagCompound itemTag = new NBTTagCompound();
-                    CraftItemStack craftItemStack = (CraftItemStack) items[i];
+                    CraftItemStack craftItemStack = (CraftItemStack) item;
                     net.minecraft.server.v1_7_R4.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(craftItemStack);
                     nmsItemStack.save(itemTag);
                     itemList.add(itemTag);
