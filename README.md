@@ -6,7 +6,8 @@ Native minecraft version: 1.7.10
 
 ## Features
 
-- Create backups of player inventories using /inventorybackup command. [If the command is used on the console, it creates a backup for all online players.]
+- Create backups of player inventories using /inventorybackup command. 
+- If the command is used on the console, it creates a backup for all online players.
 - Restore player inventories using /inv_backup_load <username> <backup_date> command.
 - Serialization of inventory to backup file using NBT format.
 - GZIP compression used to reduce backup file size.
