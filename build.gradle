@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
     compileOnly files('libs/spigot-1.7.10-SNAPSHOT-b1657.jar')
+    compileOnly files('libs/forge-1.7.10-10.13.4.1614-1.7.10-universal.jar')
     compileOnly files('libs/craftbukkit-1.7.10-R0.1-SNAPSHOT.jar')
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }

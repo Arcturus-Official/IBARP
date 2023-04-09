@@ -3,7 +3,9 @@ package arcturus.network.ibarp;
 import net.minecraft.server.v1_7_R4.NBTTagCompound;
 import net.minecraft.server.v1_7_R4.NBTTagList;
 import net.minecraft.server.v1_7_R4.NBTCompressedStreamTools;
+import net.minecraft.server.v1_7_R4.NBTTagString;
 import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,15 +14,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.io.*;
-import java.util.List;
-import java.util.Objects;
 import java.util.zip.GZIPOutputStream;
+
+
 
 
 
@@ -39,6 +42,11 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("Ibarp plugin has been enabled.");
+        Bukkit.getConsoleSender().sendMessage("=========================");
+        Bukkit.getConsoleSender().sendMessage("IBARP");
+        Bukkit.getConsoleSender().sendMessage("Version " + getDescription().getVersion());
+        Bukkit.getConsoleSender().sendMessage("Author: Avalanche7CZ");
+        Bukkit.getConsoleSender().sendMessage("=========================");
         backupFolder = new File(getDataFolder(), "backups");
         if (!backupFolder.exists()) {
             if (!backupFolder.mkdirs()) {
@@ -120,6 +128,18 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
                         byte count = itemTag.getByte("Count");
                         short damage = itemTag.getShort("Damage");
                         ItemStack item = new ItemStack(id, count, damage);
+                        if (itemTag.hasKey("tag")) {
+                            NBTTagCompound tag = itemTag.getCompound("tag");
+                            if (tag.hasKey("ench")) {
+                                NBTTagList enchantList = tag.getList("ench", 10);
+                                for (int j = 0; j < enchantList.size(); j++) {
+                                    NBTTagCompound enchantTag = enchantList.get(j);
+                                    int enchantId = enchantTag.getShort("id");
+                                    int enchantLevel = enchantTag.getShort("lvl");
+                                    item.addUnsafeEnchantment(Enchantment.getById(enchantId), enchantLevel);
+                                }
+                            }
+                        }
                         items[i] = item;
                     }
                     Player player = Bukkit.getPlayer(playerName);
@@ -142,6 +162,7 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
                 return false;
         }
     }
+
 
 
     private void backupPlayerInventory(Player player) {
@@ -172,6 +193,64 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
                     CraftItemStack craftItemStack = (CraftItemStack) item;
                     net.minecraft.server.v1_7_R4.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(craftItemStack);
                     nmsItemStack.save(itemTag);
+
+                    int damage = item.getDurability();
+                    if (damage > 0) {
+                        itemTag.setShort("Damage", (short) damage);
+                    }
+
+                    if (item.hasItemMeta()) {
+                        ItemMeta meta = item.getItemMeta();
+
+                        if (meta.hasDisplayName()) {
+                            itemTag.setString("display.Name", meta.getDisplayName());
+                        }
+
+                        if (meta.hasLore()) {
+                            NBTTagList loreList = new NBTTagList();
+                            for (String lore : meta.getLore()) {
+                                loreList.add(new NBTTagString(lore));
+                            }
+                            itemTag.set("display.Lore", loreList);
+                        }
+
+                        if (meta instanceof EnchantmentStorageMeta) {
+                            EnchantmentStorageMeta esMeta = (EnchantmentStorageMeta) meta;
+                            Map<Enchantment, Integer> enchantments = esMeta.getStoredEnchants();
+                            if (!enchantments.isEmpty()) {
+                                NBTTagList enchantmentList = new NBTTagList();
+                                for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                                    Enchantment ench = entry.getKey();
+                                    Integer level = entry.getValue();
+                                    NBTTagCompound enchTag = new NBTTagCompound();
+                                    enchTag.setShort("id", (short) ench.getId());
+                                    enchTag.setShort("lvl", level.shortValue());
+                                    enchantmentList.add(enchTag);
+                                }
+                                itemTag.set("StoredEnchantments", enchantmentList);
+                            }
+                        } else {
+                            Map<Enchantment, Integer> enchantments = item.getEnchantments();
+                            if (!enchantments.isEmpty()) {
+                                NBTTagList enchantmentList = new NBTTagList();
+                                for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                                    Enchantment ench = entry.getKey();
+                                    Integer level = entry.getValue();
+                                    NBTTagCompound enchTag = new NBTTagCompound();
+                                    enchTag.setShort("id", (short) ench.getId());
+                                    enchTag.setShort("lvl", level.shortValue());
+                                    enchantmentList.add(enchTag);
+                                }
+                                itemTag.set("Enchantments", enchantmentList);
+                            }
+                        }
+                    }
+
+                    int armor = item.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    if (armor > 0) {
+                        itemTag.setInt("generic.armor", armor);
+                    }
+
                     itemList.add(itemTag);
                 }
             }
@@ -190,6 +269,7 @@ public final class Ibarp extends JavaPlugin implements CommandExecutor {
             e.printStackTrace();
         }
     }
+
 
         private File getBackupFile(String playerName, String backupTime) {
             String folderName = backupFolder.getPath() + File.separator + playerName;
