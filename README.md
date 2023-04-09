@@ -7,7 +7,7 @@ Native minecraft version: 1.7.10
 ## Features
 
 - Create backups of player inventories using /inventorybackup command.
-- Restore player inventories using /inv_backup_load <backup_name> command.
+- Restore player inventories using /inv_backup_load <username> <backup_date> command.
 - Serialization of inventory to backup file using NBT format.
 - GZIP compression used to reduce backup file size.
 - Automatic creation of backup folder on plugin enable.
@@ -67,3 +67,7 @@ This method is called when a player runs the /inventorybackup command. It create
 
 
 If anyone is interested in contributing to IBARP or has some ideas to improve the plugin, I would be more than happy to discuss it.
+
+## In development
+
+- Tinker Construct support
