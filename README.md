@@ -19,4 +19,4 @@ If anyone is interested in contributing to IBARP or has some ideas to improve th
 
 ## In development
 
-- Tinker Construct support
+- Modded items support
