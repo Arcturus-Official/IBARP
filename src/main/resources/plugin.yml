@@ -3,8 +3,17 @@ version: '${version}'
 main: arcturus.network.ibarp.Ibarp
 authors: [ Avalanche7CZ ]
 description: Inventory backup plugin.
+softdepend:
+  - Vault
 commands:
   inventorybackup:
     description: Backs up the player's inventory.
   inv_backup_load:
     description: Load player's inventory from backup file.
+permissions:
+  ibarp.backup:
+    description: Allows players to back up their own inventory and the inventories of other players
+    default: op
+  ibarp.loadbackup:
+    description: Allows players to load their own inventory and the inventories of other players
+    default: op

@@ -35,6 +35,7 @@ import java.util.Objects;
 public class InventoryLoadCommand implements CommandExecutor {
 
     private final BackupUtils backupUtils;
+    private final String PERMISSION_LOAD_BACKUP = "ibarp.loadbackup";
 
     public InventoryLoadCommand(BackupUtils backupUtils) {
         this.backupUtils = backupUtils;
@@ -42,6 +43,10 @@ public class InventoryLoadCommand implements CommandExecutor {
 
     @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!sender.hasPermission(PERMISSION_LOAD_BACKUP)) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            return true;
+        }
         switch (cmd.getName().toLowerCase()) {
             case "inv_backup_load":
                 if (args.length < 2) {
@@ -65,38 +70,7 @@ public class InventoryLoadCommand implements CommandExecutor {
                         byte count = itemTag.getByte("Count");
                         short damage = itemTag.getShort("Damage");
                         ItemStack item = new ItemStack(id, count, damage);
-/*/ WIP Tinker Support
-                        // Check if the item is a Tinker Construct item
-                        if (item.getItemMeta() instanceof ToolCore) {
-                            NBTTagCompound tag = itemTag.getCompound("tag");
-                            if (tag.hasKey("InfiTool")) {
 
-                                // Get the Tinker Tool's properties
-                                NBTTagCompound toolTag = tag.getCompound("InfiTool");
-                                List<String> toolName = Collections.singletonList(toolTag.getString("Name"));
-                                int miningLevel = toolTag.getInt("HarvestLevel");
-                                String maxDurability = toolTag.getString("TotalDurability");
-
-                                // Create a new ToolCore item with the same properties
-                                ToolCore tinkerTool = (ToolCore) item.getItemMeta();
-                                ItemStack tinkerToolStack = new Item(tinkerTool);
-
-                                // Set the NBT data on the new item stack
-                                NBTTagCompound toolTagCompound = new NBTTagCompound();
-                                toolTagCompound.setInt("HarvestLevel", miningLevel);
-                                toolTagCompound.setString("Name", toolName.get(0));
-                                tinkerToolStack.setTag(toolTagCompound);
-
-                                // Set other properties on the new item stack
-                                ItemMeta itemMeta = tinkerToolStack.getItemMeta();
-                                itemMeta.setDisplayName(item.getDisplayName());
-                                tinkerToolStack.setItemMeta(itemMeta);
-                                tinkerToolStack.setDurability(item.getDurability());
-
-                                items[i] = tinkerToolStack;
-                            }
-                        }
-/*/
                         if (itemTag.hasKey("tag")) {
                             NBTTagCompound tag = itemTag.getCompound("tag");
                             if (tag.hasKey("ench")) {

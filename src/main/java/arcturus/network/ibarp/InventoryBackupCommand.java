@@ -1,6 +1,7 @@
 package arcturus.network.ibarp;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 public class InventoryBackupCommand implements CommandExecutor {
 
     private final InventoryBackup inventoryBackup;
+    private final String PERMISSION_LOAD_BACKUP = "ibarp.backup";
 
     public InventoryBackupCommand(InventoryBackup inventoryBackup) {
         this.inventoryBackup = inventoryBackup;
@@ -17,6 +19,10 @@ public class InventoryBackupCommand implements CommandExecutor {
 
     @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!sender.hasPermission(PERMISSION_LOAD_BACKUP)) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            return true;
+        }
         switch (cmd.getName().toLowerCase()) {
             case "inventorybackup":
                 if (sender instanceof Player) {

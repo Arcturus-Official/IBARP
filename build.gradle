@@ -29,6 +29,7 @@ dependencies {
     compileOnly files('libs/craftbukkit-1.7.10-R0.1-SNAPSHOT.jar')
     compileOnly files('libs/TConstruct-1.9.25-GTNH.jar')
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compileOnly files('libs/Vault.jar')
 }
 
 def targetJavaVersion = 8
